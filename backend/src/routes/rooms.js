@@ -153,6 +153,55 @@ async function roomRoutes(fastify, options) {
     }
   });
 
+  // Leave room
+  fastify.post('/leave', {
+    onRequest: [fastify.authenticate],
+    schema: {
+      body: {
+        type: 'object',
+        required: ['roomId'],
+        properties: {
+          roomId: { type: 'string' }
+        }
+      }
+    },
+    handler: async (request, reply) => {
+      try {
+        const { roomId } = request.body;
+        const userId = request.user.userId;
+
+        // Check if member exists
+        const member = await fastify.prisma.roomMember.findUnique({
+          where: {
+            userId_roomId: {
+              userId,
+              roomId
+            }
+          }
+        });
+
+        if (!member) {
+          return reply.status(404).send({ error: 'Not a member of this room' });
+        }
+
+        // Delete membership
+        await fastify.prisma.roomMember.delete({
+          where: {
+            userId_roomId: {
+              userId,
+              roomId
+            }
+          }
+        });
+
+        return { message: 'Left room successfully', roomId };
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.status(500).send({ error: "Failed to leave room" });
+      }
+    }
+  });
+
   // Get my rooms
   fastify.get('/my-rooms', {
     onRequest: [fastify.authenticate],

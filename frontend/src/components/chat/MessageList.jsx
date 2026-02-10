@@ -55,13 +55,13 @@ export default function MessageList({ messages, currentUserId, typingUsers }) {
   const messageGroups = groupMessagesByDate(messages);
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 space-y-4">
+    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50">
       {Object.entries(messageGroups).map(([date, msgs]) => (
         <div key={date}>
           {/* Date Divider */}
-          <div className="flex items-center justify-center my-4">
-            <div className="bg-white bg-opacity-10 backdrop-blur-lg px-4 py-1 rounded-full">
-              <p className="text-white text-opacity-60 text-sm">{date}</p>
+          <div className="flex items-center justify-center my-6">
+            <div className="bg-gray-200 px-3 py-1 rounded-full">
+              <p className="text-gray-600 text-xs font-medium">{date}</p>
             </div>
           </div>
 
@@ -75,42 +75,40 @@ export default function MessageList({ messages, currentUserId, typingUsers }) {
             return (
               <div
                 key={message.id}
-                className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-2`}
+                className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-1`}
               >
                 <div
-                  className={`flex ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-end space-x-2 max-w-md`}
+                  className={`flex ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-end space-x-2 max-w-xl`}
                 >
                   {/* Avatar */}
                   {showAvatar && !isOwn && (
-                    <div className="w-8 h-8 rounded-full bg-linear-to-br from-blue-400 to-purple-400 flex items-center justify-center text-white text-sm font-semibold shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xs font-bold shrink-0 border border-green-200">
                       {message.sender.username[0].toUpperCase()}
                     </div>
                   )}
                   {!showAvatar && !isOwn && <div className="w-8" />}
 
                   {/* Message Bubble */}
-                  <div>
+                  <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
                     {showAvatar && !isOwn && (
-                      <p className="text-white text-opacity-60 text-xs mb-1 px-3">
+                      <span className="text-xs text-gray-500 ml-1 mb-1">
                         {message.sender.username}
-                      </p>
+                      </span>
                     )}
                     <div
-                      className={`px-4 py-2 rounded-2xl ${
-                        isOwn
-                          ? 'bg-linear-to-r from-purple-500 to-pink-500 text-white rounded-br-sm'
-                          : 'bg-white bg-opacity-10 backdrop-blur-lg text-white rounded-bl-sm'
-                      }`}
-                    >
-                      <p className="wrap-break-word">{message.content}</p>
-                      <p
-                        className={`text-xs mt-1 ${
-                          isOwn ? 'text-white text-opacity-70' : 'text-white text-opacity-50'
+                      className={`px-4 py-2 rounded-2xl shadow-sm ${isOwn
+                        ? 'bg-green-600 text-white rounded-br-sm'
+                        : 'bg-white text-gray-900 border border-gray-200 rounded-bl-sm'
                         }`}
-                      >
-                        {formatTime(message.createdAt)}
-                      </p>
+                    >
+                      <p className="break-words leading-relaxed">{message.content}</p>
                     </div>
+                    <span
+                      className={`text-[10px] mt-1 px-1 ${isOwn ? 'text-gray-400' : 'text-gray-400'
+                        }`}
+                    >
+                      {formatTime(message.createdAt)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -121,19 +119,19 @@ export default function MessageList({ messages, currentUserId, typingUsers }) {
 
       {/* Typing Indicator */}
       {typingUsers.length > 0 && (
-        <div className="flex items-center space-x-2 px-3">
+        <div className="flex items-center space-x-2 px-3 pt-2">
           <div className="flex space-x-1">
-            <div className="w-2 h-2 bg-white bg-opacity-60 rounded-full animate-bounce"></div>
+            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></div>
             <div
-              className="w-2 h-2 bg-white bg-opacity-60 rounded-full animate-bounce"
+              className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
               style={{ animationDelay: '0.1s' }}
             ></div>
             <div
-              className="w-2 h-2 bg-white bg-opacity-60 rounded-full animate-bounce"
+              className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
               style={{ animationDelay: '0.2s' }}
             ></div>
           </div>
-          <p className="text-white text-opacity-60 text-sm">
+          <p className="text-gray-500 text-xs italic">
             {typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'}{' '}
             typing...
           </p>

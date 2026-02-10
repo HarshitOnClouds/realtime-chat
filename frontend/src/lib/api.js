@@ -27,6 +27,7 @@ export const createRoom = (data) => api.post('/rooms/create', data);
 export const joinRoom = (data) => api.post('/rooms/join', data);
 export const getMyRooms = () => api.get('/rooms/my-rooms');
 export const getRoomMessages = (roomId) => api.get(`/rooms/${roomId}/messages`);
+export const leaveRoom = (roomId) => api.post('/rooms/leave', { roomId });
 
 // Direct Chats
 export const createDirectChat = (data) => api.post('/direct-chats/create', data);

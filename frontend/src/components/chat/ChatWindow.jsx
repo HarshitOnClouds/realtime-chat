@@ -3,15 +3,15 @@
 import { useState, useEffect } from 'react';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
-import MemberList from './MemberList';
+import ChatDetailsModal from '../modals/ChatDetailsModal';
 import socketService from '@/lib/socket';
 import { getRoomMessages, getDirectChatMessages } from '@/lib/api';
 
-export default function ChatWindow({ activeChat, user }) {
+export default function ChatWindow({ activeChat, user, onBack, onLeave }) {
   const [messages, setMessages] = useState([]);
   const [members, setMembers] = useState([]);
   const [typingUsers, setTypingUsers] = useState([]);
-  const [showMembers, setShowMembers] = useState(true);
+  const [showDetails, setShowDetails] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -106,102 +106,78 @@ export default function ChatWindow({ activeChat, user }) {
     }
   };
 
-  const getChatMembers = () => {
-    if (activeChat.type === 'room') {
-      return members.length > 0 ? members : activeChat.data.members.map(m => m.user);
-    } else {
-      const otherUser =
-        activeChat.data.senderId === user.id
-          ? activeChat.data.receiver
-          : activeChat.data.sender;
-      return [user, otherUser];
-    }
-  };
-
-  const copyRoomCode = () => {
-    if (activeChat.type === 'room') {
-      navigator.clipboard.writeText(activeChat.data.roomCode);
-      alert('Room code copied to clipboard!');
-    }
-  };
-
   return (
-    <div className="flex-1 flex">
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="bg-white bg-opacity-10 backdrop-blur-lg border-b border-white border-opacity-20 px-6 py-4 flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-bold text-white">{getTitle()}</h2>
+    <div className="flex-1 flex flex-col h-screen bg-white">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm">
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={onBack}
+            className="md:hidden text-gray-500 hover:text-gray-700"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <div
+            className="cursor-pointer hover:bg-gray-50 px-2 py-1 rounded transition-colors"
+            onClick={() => setShowDetails(true)}
+          >
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              {getTitle()}
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </h2>
+            {activeChat.type === 'direct' && (
+              <p className="text-xs text-gray-500">
+                Click for details
+              </p>
+            )}
             {activeChat.type === 'room' && (
-              <button
-                onClick={copyRoomCode}
-                className="text-sm text-white text-opacity-60 hover:text-opacity-100 transition-all flex items-center space-x-1"
-              >
-                <span>Room Code: {activeChat.data.roomCode}</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                  />
-                </svg>
-              </button>
+              <p className="text-xs text-gray-500">
+                {activeChat.data.members?.length || 0} members · Click for info
+              </p>
             )}
           </div>
-          <button
-            onClick={() => setShowMembers(!showMembers)}
-            className="px-4 py-2 bg-white bg-opacity-20 text-white rounded-lg hover:bg-opacity-30 transition-all flex items-center space-x-2"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-              />
-            </svg>
-            <span>{showMembers ? 'Hide' : 'Show'} Members</span>
-          </button>
         </div>
-
-        {/* Messages */}
-        {loading ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-white text-opacity-60">Loading messages...</div>
-          </div>
-        ) : (
-          <MessageList
-            messages={messages}
-            currentUserId={user.id}
-            typingUsers={typingUsers}
-          />
-        )}
-
-        {/* Input */}
-        <MessageInput
-          onSendMessage={handleSendMessage}
-          roomId={activeChat.type === 'room' ? activeChat.data.id : null}
-          chatId={activeChat.type === 'direct' ? activeChat.data.id : null}
-          userId={user.id}
-          username={user.username}
-        />
       </div>
 
-      {/* Member List */}
-      {showMembers && <MemberList members={getChatMembers()} />}
+      <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Messages */}
+          {loading ? (
+            <div className="flex-1 flex items-center justify-center bg-gray-50">
+              <div className="loading loading-spinner loading-lg text-primary"></div>
+            </div>
+          ) : (
+            <MessageList
+              messages={messages}
+              currentUserId={user.id}
+              typingUsers={typingUsers}
+            />
+          )}
+
+          {/* Input */}
+          <MessageInput
+            onSendMessage={handleSendMessage}
+            roomId={activeChat.type === 'room' ? activeChat.data.id : null}
+            chatId={activeChat.type === 'direct' ? activeChat.data.id : null}
+            userId={user.id}
+            username={user.username}
+          />
+        </div>
+      </div>
+
+      {showDetails && (
+        <ChatDetailsModal
+          activeChat={activeChat}
+          user={user}
+          onClose={() => setShowDetails(false)}
+          onLeaveRoom={onLeave}
+        />
+      )}
     </div>
   );
 }

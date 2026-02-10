@@ -41,9 +41,9 @@ export default function MessageInput({ onSendMessage, roomId, chatId, userId, us
   return (
     <form
       onSubmit={handleSubmit}
-      className="p-4 bg-white bg-opacity-5 backdrop-blur-lg border-t border-white border-opacity-20"
+      className="p-4 bg-white border-t border-gray-200"
     >
-      <div className="flex space-x-2">
+      <div className="flex space-x-3 items-center">
         <input
           type="text"
           value={message}
@@ -53,12 +53,12 @@ export default function MessageInput({ onSendMessage, roomId, chatId, userId, us
           }}
           onKeyPress={handleKeyPress}
           placeholder="Type a message..."
-          className="flex-1 px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-shadow"
         />
         <button
           type="submit"
           disabled={!message.trim()}
-          className="px-6 py-3 bg-linear-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
         >
           Send
         </button>
