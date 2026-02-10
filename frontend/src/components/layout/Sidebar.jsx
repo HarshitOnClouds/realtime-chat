@@ -21,7 +21,7 @@ export default function Sidebar({
       {/* Header */}
       <div className="p-4 border-b border-gray-100">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-bold text-green-600 tracking-tight">ChatApp</h1>
+          <h1 className="text-xl font-bold text-green-600 tracking-tight">Talkito</h1>
           <button
             onClick={() => setShowLogoutModal(true)}
             className="text-sm text-gray-500 hover:text-red-600 transition-colors font-medium"
