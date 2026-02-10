@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { leaveRoom } from '@/lib/api';
+import { leaveRoom, deleteRoom } from '@/lib/api';
+import { useToast } from '@/contexts/ToastContext';
 
 export default function ChatDetailsModal({ activeChat, onClose, onLeaveRoom, user }) {
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+    const { addToast } = useToast();
 
     const isRoom = activeChat.type === 'room';
     const chatData = activeChat.data;
@@ -19,14 +20,15 @@ export default function ChatDetailsModal({ activeChat, onClose, onLeaveRoom, use
         if (!confirm('Are you sure you want to leave this room?')) return;
 
         setLoading(true);
-        setError('');
+        setLoading(true);
 
         try {
             await leaveRoom(chatData.id);
+            addToast('Left room successfully', 'success');
             onLeaveRoom();
             onClose();
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to leave room');
+            addToast(err.response?.data?.error || 'Failed to leave room', 'error');
             setLoading(false);
         }
     };
@@ -38,12 +40,6 @@ export default function ChatDetailsModal({ activeChat, onClose, onLeaveRoom, use
                     {isRoom ? 'Room Details' : 'User Profile'}
                 </h3>
 
-                {error && (
-                    <div className="alert alert-error mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        <span>{error}</span>
-                    </div>
-                )}
 
                 {isRoom ? (
                     <div className="space-y-4">
@@ -62,7 +58,10 @@ export default function ChatDetailsModal({ activeChat, onClose, onLeaveRoom, use
                                 <code className="bg-gray-100 text-gray-800 px-2 py-1 rounded font-mono text-lg">{chatData.roomCode}</code>
                                 <button
                                     className="btn btn-xs btn-ghost text-green-600 hover:bg-green-50"
-                                    onClick={() => navigator.clipboard.writeText(chatData.roomCode)}
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(chatData.roomCode);
+                                        addToast('Room code copied', 'success');
+                                    }}
                                 >
                                     Copy
                                 </button>
@@ -106,13 +105,36 @@ export default function ChatDetailsModal({ activeChat, onClose, onLeaveRoom, use
 
                 <div className="modal-action justify-between">
                     {isRoom ? (
-                        <button
-                            onClick={handleLeaveRoom}
-                            className="btn btn-error btn-outline"
-                            disabled={loading}
-                        >
-                            {loading ? <span className="loading loading-spinner"></span> : 'Leave Room'}
-                        </button>
+                        <div className="flex gap-2">
+                            {user.id === chatData.createdById && (
+                                <button
+                                    onClick={async () => {
+                                        if (!confirm('Are you sure you want to DELETE this room? This action cannot be undone.')) return;
+                                        setLoading(true);
+                                        try {
+                                            await deleteRoom(chatData.id);
+                                            addToast('Room deleted successfully', 'success');
+                                            onLeaveRoom(); // Using onLeaveRoom to trigger refresh and close chat
+                                            onClose();
+                                        } catch (err) {
+                                            addToast(err.response?.data?.error || 'Failed to delete room', 'error');
+                                            setLoading(false);
+                                        }
+                                    }}
+                                    className="btn btn-error text-white"
+                                    disabled={loading}
+                                >
+                                    {loading ? <span className="loading loading-spinner"></span> : 'Delete Room'}
+                                </button>
+                            )}
+                            <button
+                                onClick={handleLeaveRoom}
+                                className="btn btn-error btn-outline"
+                                disabled={loading}
+                            >
+                                {loading ? <span className="loading loading-spinner"></span> : 'Leave Room'}
+                            </button>
+                        </div>
                     ) : <div></div>}
 
                     <button className="btn btn-ghost text-gray-600 hover:bg-gray-100" onClick={onClose}>Close</button>

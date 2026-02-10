@@ -9,6 +9,7 @@ import ChatWindow from '@/components/chat/ChatWindow';
 import CreateRoomModal from '@/components/modals/CreateRoomModal';
 import JoinRoomModal from '@/components/modals/JoinRoomModal';
 import NewDirectChatModal from '@/components/modals/NewDirectChatModal';
+import { SidebarSkeleton } from '@/components/common/Skeleton';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -65,8 +66,13 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-green-600 text-2xl font-semibold animate-pulse">Loading...</div>
+      <div className="flex h-screen bg-gray-50">
+        <div className="w-full md:w-80 border-r border-gray-200 bg-white">
+          <SidebarSkeleton />
+        </div>
+        <div className="hidden md:flex flex-1 items-center justify-center">
+          <div className="loading loading-spinner loading-lg text-primary"></div>
+        </div>
       </div>
     );
   }

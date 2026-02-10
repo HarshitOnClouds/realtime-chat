@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ChatDetailsModal from '../modals/ChatDetailsModal';
+import { MessageSkeleton } from '../common/Skeleton';
 import socketService from '@/lib/socket';
 import { getRoomMessages, getDirectChatMessages } from '@/lib/api';
 
@@ -148,8 +149,8 @@ export default function ChatWindow({ activeChat, user, onBack, onLeave }) {
         <div className="flex-1 flex flex-col min-w-0">
           {/* Messages */}
           {loading ? (
-            <div className="flex-1 flex items-center justify-center bg-gray-50">
-              <div className="loading loading-spinner loading-lg text-primary"></div>
+            <div className="flex-1 overflow-y-auto bg-gray-50">
+              <MessageSkeleton />
             </div>
           ) : (
             <MessageList

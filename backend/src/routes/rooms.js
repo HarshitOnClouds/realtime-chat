@@ -202,6 +202,52 @@ async function roomRoutes(fastify, options) {
     }
   });
 
+  // Delete room
+  fastify.delete('/:roomId', {
+    onRequest: [fastify.authenticate],
+    schema: {
+      params: {
+        type: 'object',
+        required: ['roomId'],
+        properties: {
+          roomId: { type: 'string' }
+        }
+      }
+    },
+    handler: async (request, reply) => {
+      try {
+        const { roomId } = request.params;
+        const userId = request.user.userId;
+
+        // Find room
+        const room = await fastify.prisma.room.findUnique({
+          where: { id: roomId }
+        });
+
+        if (!room) {
+          return reply.status(404).send({ error: 'Room not found' });
+        }
+
+        // Check if creator
+        if (room.createdById !== userId) {
+          return reply.status(403).send({ error: 'Only the creator can delete this room' });
+        }
+
+        // Delete room (Prisma should cascade delete members and messages if configured, 
+        // but we'll manually ensure for safety if needed, or rely on Prisma cascade)
+        // Assuming Prisma schema has onDelete: Cascade for relations
+        await fastify.prisma.room.delete({
+          where: { id: roomId }
+        });
+
+        return { message: 'Room deleted successfully', roomId };
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.status(500).send({ error: 'Failed to delete room' });
+      }
+    }
+  });
+
   // Get my rooms
   fastify.get('/my-rooms', {
     onRequest: [fastify.authenticate],
