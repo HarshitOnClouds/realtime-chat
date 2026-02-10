@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function Sidebar({
@@ -13,6 +14,7 @@ export default function Sidebar({
   user,
 }) {
   const { logoutUser } = useAuth();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   return (
     <div className="w-full bg-white flex flex-col h-screen">
@@ -21,10 +23,7 @@ export default function Sidebar({
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-xl font-bold text-green-600 tracking-tight">ChatApp</h1>
           <button
-            onClick={() => {
-              logoutUser();
-              // window.location.reload(); // Optional: force reload to clear state
-            }}
+            onClick={() => setShowLogoutModal(true)}
             className="text-sm text-gray-500 hover:text-red-600 transition-colors font-medium"
           >
             Logout
@@ -142,6 +141,35 @@ export default function Sidebar({
           </div>
         )}
       </div>
+
+      {showLogoutModal && (
+        <dialog className="modal modal-open">
+          <div className="modal-box bg-white text-gray-900">
+            <h3 className="font-bold text-lg">Confirm Logout</h3>
+            <p className="py-4">Are you sure you want to log out of your account?</p>
+            <div className="modal-action">
+              <button
+                className="btn btn-ghost text-gray-600 hover:bg-gray-100"
+                onClick={() => setShowLogoutModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-error text-white"
+                onClick={() => {
+                  logoutUser();
+                  setShowLogoutModal(false);
+                }}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+          <form method="dialog" className="modal-backdrop">
+            <button onClick={() => setShowLogoutModal(false)}>close</button>
+          </form>
+        </dialog>
+      )}
     </div>
   );
 }
